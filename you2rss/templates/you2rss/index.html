@@ -1,0 +1,47 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
+  <head>
+    <title>You2RSS channels</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
+  </head>
+  <body>
+    <center>
+      <h1>Available channels</h1>
+    </center>
+    <div class="container">
+      <p>
+        <div class="table-responsible">
+          <table class="table table-striped">
+            <tr>
+              <th>Title</th>
+              <th>Videos</th>
+              <th>Latest</th>
+              <th>Feed</th>
+            </tr>
+            {% for channel in latest_channel_list %}
+            <tr>
+              <td>
+                <a href="{% url 'you2rss:videoperchannel' channel.channel_id %}">{{ channel.title_text }}</a>
+              </td>
+              <td> {{ channel.video_set.all|length }}</td>
+              <td> {{ channel.latest_video|timesince }} </td>
+              <td>
+                <a class="btn btn-primary" target="_blank" type="application/rss+xml"
+                   href="{% url 'you2rss:rssvideoperchannel' channel.channel_id %}">RSS</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </p>
+    </div>
+  </body>
+</html>
+
+
