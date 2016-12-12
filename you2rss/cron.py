@@ -40,7 +40,7 @@ class UpdateChannels(CronJobBase):
 
     def do(self):
         log.info('Updating videos')
-        self.update_subscriptions()
+#        self.update_subscriptions()
         self.update_all_videos()
 
 
@@ -57,8 +57,8 @@ class UpdateChannels(CronJobBase):
         subscriptions = json.loads(r.text)
         existing_subs = Channel.objects.all()
         log.info('Got ' + str(len(subscriptions['items'])) + ' subscriptions')
-        for n in subscriptions['items']:
-            s = n['snippet']
+        for sub in subscriptions['items']:
+            s = sub['snippet']
             title = s['title']
             channelId = s['resourceId']['channelId']
             publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -75,11 +75,16 @@ class UpdateChannels(CronJobBase):
                 log.info("Channel " + title + "already exists")
 
     def update_all_videos(self):
-        for n in Channel.objects.all():
-            self.update_videos(n)
+        try:
+            for channel in Channel.objects.all():
+                self.update_videos(channel)
 
+        except Exception as e:
+            log.error("Caught exception when updating all videos")
+            log.error(e)
+            
     def update_videos(self,channel):
-        log.info('Updating videos for channel ' + channel.title_text)
+        log.info('Updating videos for channel "' + channel.title_text + '"')
         head = {'referer':'http://' + 'www.hominem.se'}
         payload = {'key': settings.APIKEY,
                'part': 'snippet',
@@ -92,55 +97,73 @@ class UpdateChannels(CronJobBase):
         latest = None
         numvideos = 0 
         if videos:
-            a = videos.last().pub_date
-            latest = a + datetime.timedelta(0,60)
+            last_pub = videos.last().pub_date
+            latest = last_pub + datetime.timedelta(0,60)
         
-            if(latest):
-                payload['publishedAfter'] = latest.isoformat()
-                log.info('Found latest ' + latest.isoformat() +' video on ' + channel.title_text)
-            else: 
-                log.info('No latest video found, new channel ' + channel.title_text )
+        if latest:
+            payload['publishedAfter'] = latest.isoformat()
+            log.info('Latest local video from ' + str(latest) + ' in channel "' + channel.title_text + '"')
+        else: 
+            log.info('No latest video found, new channel ' + channel.title_text )
         
-            while more:
-                r = requests.get('https://www.googleapis.com/youtube/v3/search', headers=head, params=payload)
-                videos = json.loads(r.text)
-                if 'error' in videos:
-                    log.error(videos['error'])
-                    log.error("request was "+ r.url)
-                    return
+        while more:
+            r = requests.get('https://www.googleapis.com/youtube/v3/search', headers=head, params=payload)
+            videos = json.loads(r.text)
+            if 'error' in videos:
+                log.error(videos['error'])
+                log.error("request was "+ r.url)
+                return
 
-                totalvideos = videos['pageInfo']['totalResults']
-                if 'items' in videos:
-                    numvideos += len(videos['items'])
-
-                    log.info("Got " + str(numvideos) + " videos of " + str(totalvideos))
-        
-                    if 'nextPageToken' in videos:
-                        nextpage = videos['nextPageToken']
-                        payload['pageToken'] = nextpage
-                        more = True
+            totalvideos = videos['pageInfo']['totalResults']
+            numitems = 0 
+            if 'items' in videos:
+                for item in videos['items']:
+                    if 'youtube#video' in item['id']['kind']:
+                        numvideos += 1
                     else:
-                        nextpage = None
-                        more = False
+                        numitems += 1
 
-                self.insert_videos(channel,videos,latest)
+            log.info("Got " + str(numvideos) + " videos of " + str(totalvideos) + '. Got ' + str(numitems) + ' items.')
+        
+            if 'nextPageToken' in videos:
+                nextpage = videos['nextPageToken']
+                payload['pageToken'] = nextpage
+                more = True
+            else:
+                nextpage = None
+                more = False
+                
+            self.insert_videos(channel,videos,latest)
 
     def insert_videos(self,channel,videos,latest):
-        for n in videos['items']:
-            if not 'youtube#video' in n['id']['kind']:
-                continue
-            videoId = n['id']['videoId']
-            s = n['snippet']
-            publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
-            title = s['title']
-            pub = timezone.make_aware(publishedAt,timezone=None)
-            description = s['description']
-            thumb = s['thumbnails']['default']['url']
-            if len(channel.video_set.filter(title_text=title)) == 0:
-                v = channel.video_set.create(video_id=videoId, title_text=title, description_text=description,thumbnail=thumb,pub_date=publishedAt)
-                log.info("Created video " + str(v) + "published at " + publishedAt.isoformat())
-                v.save()
-
+        log.info('insert_videos called :  ' + str(videos))
+        try:
+            for item in videos['items']:
+                log.info('item in resp: ' + str(item))
+                if not 'youtube#video' in item['id']['kind']:
+                    continue
+                videoId = item['id']['videoId']
+                s = item['snippet']
+                publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                title = s['title']
+                pub = timezone.make_aware(publishedAt,timezone=None)
+                description = s['description']
+                thumb = s['thumbnails']['default']['url']
+                if len(channel.video_set.filter(title_text=title)) == 0:
+                    v = channel.video_set.create(video_id=videoId,
+                                                 title_text=title,
+                                                 description_text=description,
+                                                 thumbnail=thumb,
+                                                 pub_date=publishedAt)
+                    log.info("Created video " + str(v) + "published at " + publishedAt.isoformat())            
+                    v.save()
+                    channel.latest_video = publishedAt
+                    channel.save()
+                else:
+                    log.info('Video ' + title + ' already exists locally')
+        except Exception as e:
+            log.info("Caught exception " + str(e))
+            
     def update_videos_for(self,channeltitle):
         channel = Channel.objects.get(title_text=channeltitle)
         if channel:
@@ -149,16 +172,16 @@ class UpdateChannels(CronJobBase):
     def delete_videos_for(self,channeltitle):
         channel = Channel.objects.get(title_text=channeltitle)
         if channel:
-            for n in channel.video_set.all():
-                n.delete()
+            for video in channel.video_set.all():
+                video.delete()
 
     def delete_all_channels(self):
-        for n in Channel.objects.all():
-            n.delete()
+        for channel in Channel.objects.all():
+            channel.delete()
 
     def print_all_channels(self):
-        for n in Channel.objects.all():
-            log.info(str(n))
+        for channel in Channel.objects.all():
+            log.info(str(channel))
 
     def latest_video(self,channel):
         videos = channel.video_set.order_by('pub_date')
@@ -169,8 +192,8 @@ class UpdateChannels(CronJobBase):
             channel.save()
             
     def check_latest_in_channels(self):
-        for n in Channel.objects.all():
-            latest_video(n)
+        for channel in Channel.objects.all():
+            latest_video(channel)
 
 
 if __name__ == '__main__':

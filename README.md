@@ -6,3 +6,4 @@ When requesting an item from the feed the item is downloaded, converted to audio
 Also provides a web interface for browsing your subscriptions, their videos, and 
 
 Requires a Google API key!
+Requires django, django_cron, youtube-dl and feedgen

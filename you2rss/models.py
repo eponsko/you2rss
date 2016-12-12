@@ -16,6 +16,7 @@ class Channel(models.Model):
     latest_video = models.DateTimeField('latest video')
     def __str__(self):
         return self.title_text
+
 @python_2_unicode_compatible
 class Video(models.Model):
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
@@ -24,6 +25,5 @@ class Video(models.Model):
     title_text = models.CharField(max_length=200)
     description_text = models.CharField(max_length=2000)
     thumbnail = models.CharField(max_length=200)
-    downloaded = models.BooleanField(default=False)
     def __str__(self):
         return self.title_text
