@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import Channel, Video
+import logging
 
+log = logging.getLogger(__name__)
 # Register your models here.
 
 def update_channel(modeladmin, request, queryset):

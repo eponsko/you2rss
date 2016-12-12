@@ -17,27 +17,31 @@ from .models import Channel, Video
 try:
     FileNotFoundError
 except NameError:
-    #py2
+    # py2
     FileNotFoundError = IOError
 
 executor = ThreadPoolExecutor(max_workers=4)
 mimetypes.init()
 
-log = logging.getLogger(__name__)                       
+log = logging.getLogger(__name__)
 
 downloaded_file = None
+
 
 def my_hook(d):
     if d['status'] == 'finished':
         global downloaded_file
-        downloaded_file= d['filename']
-        log.info('Download of "' + downloaded_file +'" complete. Time: '+ d['_elapsed_str'] +' size: '+d['_total_bytes_str'] +' , converting it...')
+        downloaded_file = d['filename']
+        log.info('Download of "' + downloaded_file + '" complete. Time: ' + d['_elapsed_str'] + ' size: ' + d[
+            '_total_bytes_str'] + ' , converting it...')
+
 
 def index(request):
     return redirect('you2rss:channels')
 
+
 def listchannels(request):
-#    latest_channel_list = Channel.objects.order_by('title_text')
+    #    latest_channel_list = Channel.objects.order_by('title_text')
     latest_channel_list = Channel.objects.order_by('-latest_video')
     template = loader.get_template('you2rss/index.html')
     context = {
@@ -45,8 +49,10 @@ def listchannels(request):
     }
     return HttpResponse(template.render(context, request))
 
+
 def listvideos(request):
     return HttpResponse('Video list')
+
 
 def listvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
@@ -60,8 +66,10 @@ def listvideoschannel(request, channel_id):
     }
     return HttpResponse(template.render(context, request))
 
+
 def rsschannels(request):
     return HttpResponse('combined rss feed here')
+
 
 def test(request, vid):
     data = '''
@@ -74,17 +82,18 @@ def test(request, vid):
     '''
     return HttpResponse(data)
 
+
 def rssvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
     if not channel:
         return Http404
-    
+
     videos = channel.video_set.order_by('-pub_date')
     fg = FeedGenerator()
     fg.load_extension('podcast')
 
     channelURL = ''.join(['http://', get_current_site(request).domain,
-                       reverse('you2rss:videoperchannel',args=(channel_id,))])
+                          reverse('you2rss:videoperchannel', args=(channel_id,))])
     fg.id(channelURL)
     fg.title(channel.title_text)
     fg.author({'name': 'pon sko', 'email': 'john@example.de'})
@@ -107,8 +116,7 @@ def rssvideoschannel(request, channel_id):
             videodesc = "no desc"
         fe.content(videodesc)
         fileURL = ''.join(['http://', get_current_site(request).domain,
-                           reverse('you2rss:rssfile',args=(video.video_id,))])
-
+                           reverse('you2rss:rssfile', args=(video.video_id,))])
 
         fe.enclosure(fileURL, '1337', 'audio/mpeg')
         fe.id(fileURL)
@@ -133,25 +141,26 @@ def download(request, vid):
     return HttpResponse(template.render(context, request))
 
 
-def file(request,vid):
-    filepath = settings.FILE_LOCATION+vid+'_out.*'
+def file(request, vid):
+    filepath = settings.FILE_LOCATION + vid + '_out.*'
     txt = glob.glob(filepath)
     for textfile in txt:
         if os.path.exists(textfile):
-            response = FileResponse(open(textfile,'rb'))
+            response = FileResponse(open(textfile, 'rb'))
             response['Content-Type'] = mimetypes.guess_type(textfile)[0]
             log.info(response['Content-Type'])
             response['Content-Length'] = os.path.getsize(textfile)
             return response
     return Http404
 
-def rssfile(request,vid):
-    filepath = settings.FILE_LOCATION+vid+'_out.*'
+
+def rssfile(request, vid):
+    filepath = settings.FILE_LOCATION + vid + '_out.*'
     txt = glob.glob(filepath)
     for textfile in txt:
         if os.path.exists(textfile):
-            return HttpResponseRedirect('http://' + get_current_site(request).domain+'/'+textfile)
-            response = FileResponse(open(textfile,'rb'))
+            return HttpResponseRedirect('http://' + get_current_site(request).domain + '/' + textfile)
+            response = FileResponse(open(textfile, 'rb'))
             response['Content-Type'] = mimetypes.guess_type(textfile)[0]
             response['Content-Length'] = os.path.getsize(textfile)
             return response
@@ -159,12 +168,13 @@ def rssfile(request,vid):
     txt = glob.glob(filepath)
     for textfile in txt:
         if os.path.exists(textfile):
-            return HttpResponseRedirect('http://'+ get_current_site(request).domain+'/'+textfile)
-            response = FileResponse(open(textfile,'rb'))
+            return HttpResponseRedirect('http://' + get_current_site(request).domain + '/' + textfile)
+            response = FileResponse(open(textfile, 'rb'))
             response['Content-Type'] = mimetypes.guess_type(textfile)[0]
             response['Content-Length'] = os.path.getsize(textfile)
             return response
     return Http404
+
 
 def startDownload(vid):
     v = Video.objects.get(video_id=vid)
@@ -183,25 +193,24 @@ def startDownload(vid):
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             url = 'http://www.youtube.com/watch/?v=' + vid
-            log.info('Downloading of "' + vid +'" started')
+            log.info('Downloading of "' + vid + '" started')
             a = ydl.download([url])
-            filepath = settings.FILE_LOCATION+vid+'_out.*'
+            filepath = settings.FILE_LOCATION + vid + '_out.*'
             txt = glob.glob(filepath)
 
-            log.info('Files found : ' + str(txt) + ' len: ' + str(len(txt)) ) 
-        
-        
+            log.info('Files found : ' + str(txt) + ' len: ' + str(len(txt)))
+
             if len(txt) == 1:
                 log.info('Download and conversion successful')
                 v.downloaded = True
-                v.save()                
+                v.save()
             elif len(txt) > 1:
                 # cleanup wasn't performed
                 try:
                     log.info('Removing file "' + downloaded_file + '"')
                     os.remove(downloaded_file)
                 except OSError:
-                    log.error('Tried to delete file "' + downloaded_file + '" but failed')                           
+                    log.error('Tried to delete file "' + downloaded_file + '" but failed')
                 v.downloaded = True
                 v.save()
             else:
@@ -212,14 +221,3 @@ def startDownload(vid):
     except Exception as e:
         log.error('caught exception')
         log.error("I/O error({0}): {1}".format(e.errno, e.strerror))
-    
-
-
-
-
-
-
-
-
-
-

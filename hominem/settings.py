@@ -16,14 +16,12 @@ from ConfigParser import RawConfigParser
 config = RawConfigParser()
 config.read('/etc/you2rss.ini')
 
-SECRET_KEY = config.get('secrets','SECRET_KEY')
-STATIC_ROOT = config.get('secrets','STATIC_ROOT')
+SECRET_KEY = config.get('secrets', 'SECRET_KEY')
+STATIC_ROOT = config.get('secrets', 'STATIC_ROOT')
 APIKEY = config.get('secrets', 'APIKEY')
-
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -33,7 +31,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -61,7 +58,7 @@ MIDDLEWARE = [
 CRON_CLASSES = [
     'you2rss.cron.CleanUpFiles',
     'you2rss.cron.UpdateChannels',
-    ]
+]
 
 ROOT_URLCONF = 'hominem.urls'
 
@@ -83,7 +80,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hominem.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
@@ -93,7 +89,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -118,25 +113,24 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%Y-%b-%d %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%Y-%b-%d %H:%M:%S"
         },
     },
     'handlers': {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR +'/django.log',
-            'formatter':'standard',
+            'filename': BASE_DIR + '/django.log',
+            'formatter': 'standard',
         },
     },
 
-    'root':{
-        'level':'INFO',
-        'handlers':['logfile']
+    'root': {
+        'level': 'INFO',
+        'handlers': ['logfile']
     },
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -151,11 +145,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
 
 FILE_LOCATION = 'static/files/'
-

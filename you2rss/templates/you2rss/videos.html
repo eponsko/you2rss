@@ -1,56 +1,59 @@
 {% load staticfiles %}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
-  <head>
+<head>
     <title>{{ channel_title }}</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
+    <meta name="viewport"
+          content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
     <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
-  </head>
-  <body>
-    {% if video_list %}
+</head>
+<body>
+{% if video_list %}
     {% load you2rss_extras %}
     <div class="container">
-      <center>  
-      <h1>{{ channel_title }}</h1>
-      <img src="{{ channel_thumb }}" height="200" width="200"> 
-      </center>
+        <center>
+            <h1>{{ channel_title }}</h1>
+            <img src="{{ channel_thumb }}" height="200" width="200">
+        </center>
     </div>
     <div class="container">
-      <p><h5>{{ description }}</h5></p>
+        <p><h5>{{ description }}</h5></p>
     </div>
     <div class="container">
-      <p>
-    <div class="table-responsible">
-    <table class="table table-striped">
-      <tr>
-        <th>Date</th>
-        <th>Title</th>
-        <th>Start</th>
-    </tr>
-    {% for video in video_list %}
-      <tr>
+        <p>
+        <div class="table-responsible">
+            <table class="table table-striped">
+                <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Start</th>
+                </tr>
+                {% for video in video_list %}
+                    <tr>
 
-          <td>{{ video.pub_date|date:"M d Y" }}</td>
-          <td><a href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a> </td>
-          {% if video.video_id|video_exists %}
-          <td><a class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a> </td>
-          {% else %}
-          <td><a class="btn btn-primary" href="{%  url 'you2rss:startdownload' video.video_id %}" onclick="return true;">Download</a></td>
-          {% endif %}
-      </tr>
-    {% endfor %}
-    </table>
-    </div>
-    </p>
+                        <td>{{ video.pub_date|date:"M d Y" }}</td>
+                        <td><a href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a>
+                        </td>
+                        {% if video.video_id|video_exists %}
+                            <td><a class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
+                        {% else %}
+                            <td><a class="btn btn-primary" href="{% url 'you2rss:startdownload' video.video_id %}"
+                                   onclick="return true;">Download</a></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        </p>
     </div>
 {% else %}
     <p>No channels are available.</p>
 {% endif %}
-  </body>
+</body>
 </html>
 
 
