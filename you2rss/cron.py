@@ -41,8 +41,16 @@ class UpdateChannels(CronJobBase):
 
     def do(self):
         log.info('Updating videos')
-        #        self.update_subscriptions()
-        self.update_all_videos()
+        try: 
+            self.update_subscriptions()
+        except Exception as e:
+            log.error("Caught exception while updating subscriptions")
+            log.error(str(e))
+        try:
+            self.update_all_videos()
+        except Exception as e:
+            log.error("Caught exception while updating videos")
+            log.error(str(e))
 
     def update_subscriptions(self):
         log.info('running update subscriptions')
@@ -51,28 +59,43 @@ class UpdateChannels(CronJobBase):
                    'part': 'snippet',
                    'channelId': 'UCvVx_jTHBKt0HW-iEkZnXTg',
                    'maxResults': '50'}
+        nextpage = None
+        more = True
+        while more:
+            try:
+                r = requests.get('https://www.googleapis.com/youtube/v3/subscriptions', headers=head, params=payload)
+            except requests.RequestException as e:
+                log.error("Exception in requests.get when searching: " + str(e))
+                return
 
-        r = requests.get('https://www.googleapis.com/youtube/v3/subscriptions', headers=head, params=payload)
-        subscriptions = json.loads(r.text)
-        existing_subs = Channel.objects.all()
-        log.info('Got ' + str(len(subscriptions['items'])) + ' subscriptions')
-        for sub in subscriptions['items']:
-            s = sub['snippet']
-            title = s['title']
-            channelId = s['resourceId']['channelId']
-            publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
-            pub = timezone.make_aware(publishedAt, timezone=None)
-            description = s['description']
-            thumb = s['thumbnails']['default']['url']
-
-            channels = Channel.objects.filter(title_text=title)
-            if len(channels) == 0:
-                q = Channel(channel_id=channelId, title_text=title, description_text=description, thumbnail=thumb,
-                            pub_date=pub)
-                q.save()
-                log.info("Added new channel: " + title)
+            subscriptions = json.loads(r.text)
+            if 'nextPageToken' in subscriptions:
+                nextpage = subscriptions['nextPageToken']
+                payload['pageToken'] = nextpage
+                more = True
             else:
-                log.info("Channel " + title + "already exists")
+                nextpage = None
+                more = False
+
+            existing_subs = Channel.objects.all()
+            log.info('Got ' + str(len(subscriptions['items'])) + ' subscriptions')
+            for sub in subscriptions['items']:
+                s = sub['snippet']
+                title = s['title']
+                channelId = s['resourceId']['channelId']
+                publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                pub = timezone.make_aware(publishedAt, timezone=None)
+                description = s['description']
+                thumb = s['thumbnails']['default']['url']
+
+                channels = Channel.objects.filter(title_text=title)
+                if len(channels) == 0:
+                    q = Channel(channel_id=channelId, title_text=title, description_text=description, thumbnail=thumb,
+                            pub_date=pub,latest_video=pub)
+                    q.save()
+                    log.info("Added new channel: " + title)
+                else:
+                    log.info("Channel " + title + "already exists")
 
     def update_all_videos(self):
         try:

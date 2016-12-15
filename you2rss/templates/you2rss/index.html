@@ -14,9 +14,10 @@
 <body>
 <center>
     <h1>Available channels</h1>
+    <a href="{% url 'you2rss:opml' %}"> OPML</a>
 </center>
 <div class="container">
-    <p>
+  <p>
     <div class="table-responsible">
         <table class="table table-striped">
             <tr>
@@ -40,9 +41,14 @@
             {% endfor %}
         </table>
     </div>
-    </p>
+  </p>
 </div>
 </body>
 </html>
+
+
+
+
+
 
 
