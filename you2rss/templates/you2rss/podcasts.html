@@ -34,12 +34,12 @@
             {% for podcast in latest_podcast_list %}
                 <tr>
                     <td>
-                        <a href="{% url 'you2rss:podperpodcast' podcast.id %}">{{ podcast.title_text }}</a>
+                        <a title="See all released episodes" href="{% url 'you2rss:podperpodcast' podcast.id %}">{{ podcast.title_text }}</a>
                     </td>
-                    <td> {{ podcast.pod_set.all|length }}</td>
-                    <td> {{ podcast.latest_pod|timesince }} </td>
+                    <td><div title="{{ podcast.pod_set.all|length }} episodes released"> {{ podcast.pod_set.all|length }}</div></td>
+                    <td><div title="Latest episode was released {{ podcast.latest_pod|timesince }} ago"> {{ podcast.latest_pod|timesince }}</div></td>
                     <td>
-                        <a class="btn btn-primary" target="_blank" type="application/rss+xml"
+                        <a class="btn btn-primary" target="_blank" type="application/rss+xml" title="Download RSS feed for podcast"
                            href="{{ podcast.rss_link }}">RSS</a>
                     </td>
                 </tr>

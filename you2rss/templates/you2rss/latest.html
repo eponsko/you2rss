@@ -33,32 +33,34 @@
     </div>
     <div class="container">
         <p>
-        <div class="table-responsible">
-            <table class="table table-striped">
-                <tr>
-                  <th>Title</th>
-                  <th>Source</th>
-                  <th>date</th>
-                </tr>
-                {% for pod in pod_list %}
-                   {% if pod.audio_link %}
-                        <tr>
-                          <td><a href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
-                          <td><a href="{{ pod.http_link }}">{{ pod.podcast.title_text }} (P)</a> </td>
-                          <td>{{ pod.pub_date|timesince }}</td>
-                        </tr>
-                   {% endif %}
-                   {% if pod.video_id %}
-                        <tr> 
-                          <td><a href="{% url 'you2rss:rssfile' pod.video_id %}"> {{ pod.title_text }} </a></td>
-                          <td><a href="http://www.youtube.com/watch?v={{ pod.video_id }}">{{ pod.channel.title_text }} (Y) </a></td>
-                          <td>{{ pod.pub_date|timesince }}</td>
-
-                        </tr>                        
-                        {% endif %}                        
-                {% endfor %}
+<!--          <div class="table-responsive">  -->
+            <table class="table table-condensed">
+              <tr>
+                <!-- <th>#</th> -->
+                <th>Title</th>
+                <th>Source</th>
+                <th>Age</th>
+              </tr>
+               {% for pod in pod_list %}
+                 {% if pod.audio_link %}
+              <tr class="active">
+                <!-- <td>{{ forloop.counter }}</td> -->
+                <td><a title="Download podcast audio file" href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
+                <td><a title="Visit podcast page for episode" href="{{ pod.http_link }}">{{ pod.podcast.title_text }}</a> </td>
+                <td><div title="Podcast released {{ pod.pub_date|timesince }} ago"> {{ pod.pub_date|timesince }}</div></td>
+              </tr>
+                {% endif %}
+                {% if pod.video_id %}
+              <tr> 
+                <!-- <td>{{ forloop.counter }}</td> -->
+                <td><a title="Download audio file for YouTube video" href="{% url 'you2rss:rssfile' pod.video_id %}"> {{ pod.title_text }} </a></td>
+                <td><a title="Watch video on YouTube" href="http://www.youtube.com/watch?v={{ pod.video_id }}">{{ pod.channel.title_text }} </a></td>
+                <td><div title="Video published {{ pod.pub_date|timesince }} ago">{{ pod.pub_date|timesince }} </div></td>
+              </tr>                        
+                {% endif %}                        
+              {% endfor %}
             </table>
-        </div>
+       <!-- </div>   -->
         </p>
     </div>
 {% else %}

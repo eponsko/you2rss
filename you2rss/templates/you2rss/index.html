@@ -35,12 +35,12 @@
             {% for channel in latest_channel_list %}
                 <tr>
                     <td>
-                        <a href="{% url 'you2rss:videoperchannel' channel.channel_id %}">{{ channel.title_text }}</a>
+                        <a title="YouTube channel name" href="{% url 'you2rss:videoperchannel' channel.channel_id %}">{{ channel.title_text }}</a>
                     </td>
-                    <td> {{ channel.video_set.all|length }}</td>
-                    <td> {{ channel.latest_video|timesince }} </td>
+                    <td> <div title="{{ channel.video_set.all|length }} videos released">{{ channel.video_set.all|length }} </div></td>
+                    <td> <div title="Latest video released {{ channel.latest_video|timesince }} ago"> {{ channel.latest_video|timesince }}  </div></td>
                     <td>
-                        <a class="btn btn-primary" target="_blank" type="application/rss+xml"
+                        <a class="btn btn-primary" target="_blank" type="application/rss+xml" title="Download RSS feed for channel"
                            href="{% url 'you2rss:rssvideoperchannel' channel.channel_id %}">RSS</a>
                     </td>
                 </tr>

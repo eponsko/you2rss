@@ -13,7 +13,7 @@ import datetime
 import json
 import logging
 import requests
-
+import feedparser
 log = logging.getLogger(__name__)
 
 
@@ -37,7 +37,7 @@ class CleanUpFiles(CronJobBase):
 class UpdateChannels(CronJobBase):
     RUN_EVERY_MINS = 120
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'you2rss.cron.cleanup'
+    code = 'you2rss.cron.UpdateChannels'
 
     def do(self):
         log.info('Updating videos')
@@ -227,7 +227,7 @@ class UpdateChannels(CronJobBase):
 class UpdatePodcasts(CronJobBase):
     RUN_EVERY_MINS = 120
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'you2rss.cron.cleanup'
+    code = 'you2rss.cron.UpdatePodcasts'
 
     def do(self):
         log.info('Updating podcasts')
@@ -262,7 +262,11 @@ class UpdatePodcasts(CronJobBase):
                     skip = True
             if not skip:
                 publishedAt = timezone.datetime.fromtimestamp(mktime(n.published_parsed))
-                fileUrl = n.link
+                fileUrl = 'not found'
+                http_link = 'not found'
+                if 'link' in n:
+                    fileUrl = n.link
+                    http_link = n.link
                 for enc in n.enclosures:
                     if "audio" in enc.type:
                         fileUrl = enc.href                
@@ -271,7 +275,7 @@ class UpdatePodcasts(CronJobBase):
                                              description_text=n.description,
                                              pub_date=publishedAt,
                                              audio_link=fileUrl,
-                                             http_link=n.link)
+                                             http_link=http_link)
                 log.info("Created pod "+ n.title + " published at " + n.published)
                 pod.save()
                 podcast.save()

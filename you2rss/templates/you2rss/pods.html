@@ -33,7 +33,7 @@
     </div>
     <div class="container">
         <p>
-        <div class="table-responsible">
+        <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
                     <th>Date</th>
@@ -42,8 +42,8 @@
                 {% for pod in pod_list %}
                     <tr>
 
-                        <td><a href="{{ pod.http_link }}">{{ pod.pub_date|date:"M d Y" }}</a></td>
-                        <td><a href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
+                        <td><a title="Visit podcast page for episode" href="{{ pod.http_link }}">{{ pod.pub_date|date:"M d Y" }}</a></td>
+                        <td><a title="Download podcast audio file" href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
                     </tr>
                 {% endfor %}
             </table>
@@ -55,6 +55,18 @@
 {% endif %}
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -43,13 +43,13 @@
                 {% for video in video_list %}
                     <tr>
 
-                        <td>{{ video.pub_date|date:"M d Y" }}</td>
-                        <td><a href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a>
+                        <td><div title="Video published date"> {{ video.pub_date|date:"M d Y" }}</div></td>
+                        <td><a title="Watch video on YouTube" href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a>
                         </td>
                         {% if video.video_id|video_exists %}
-                            <td><a class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
+                            <td><a title="Access the audio file" class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
                         {% else %}
-                            <td><a class="btn btn-primary" href="{% url 'you2rss:startdownload' video.video_id %}"
+                            <td><a title="Start download of audio" class="btn btn-primary" href="{% url 'you2rss:startdownload' video.video_id %}"
                                    onclick="return true;">Download</a></td>
                         {% endif %}
                     </tr>
