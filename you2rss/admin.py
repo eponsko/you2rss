@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Channel, Video
+from .models import Channel, Video, Podcast, Pod
 import logging
 
 log = logging.getLogger(__name__)
@@ -35,3 +35,18 @@ class VideoAdmin(admin.ModelAdmin):
     ordering = ['-pub_date']
     list_display = ('title_text', 'channel', 'pub_date',)
     list_filter = ('channel','pub_date',)
+
+
+@admin.register(Podcast)
+class PodcastAdmin(admin.ModelAdmin):
+    date_hierarchy = 'latest_pod'
+    ordering = ['title_text']
+    list_display = ('title_text', 'latest_pod',)
+
+    
+@admin.register(Pod)
+class PodAdmin(admin.ModelAdmin):
+    date_hierarchy = 'pub_date'
+    ordering = ['-pub_date']
+    list_display = ('title_text', 'podcast', 'pub_date',)
+    list_filter = ('podcast','pub_date',)

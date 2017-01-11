@@ -58,6 +58,7 @@ MIDDLEWARE = [
 CRON_CLASSES = [
     'you2rss.cron.CleanUpFiles',
     'you2rss.cron.UpdateChannels',
+    'you2rss.cron.UpdatePodcasts',
 ]
 
 ROOT_URLCONF = 'hominem.urls'

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
 <head>
-    <title>{{ channel_title }}</title>
+    <title>{{ podcast_title }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -17,15 +17,15 @@
 <body>
   <ul class="nav nav nav-tabs nav-justified">
     <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-    <li role="presentation" class="active"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-    <li role="presentation"><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
-  </ul>
-  {% if video_list %}
+    <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+    <li role="presentation" class="active" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+</ul>
+{% if pod_list %}
     {% load you2rss_extras %}
     <div class="container">
         <center>
-            <h1>{{ channel_title }}</h1>
-            <img src="{{ channel_thumb }}" height="200" width="200">
+            <h1>{{ podcast_title }}</h1>
+            <img src="{{ podcast_thumb }}" height="200" width="200">
         </center>
     </div>
     <div class="container">
@@ -38,20 +38,12 @@
                 <tr>
                     <th>Date</th>
                     <th>Title</th>
-                    <th>Start</th>
                 </tr>
-                {% for video in video_list %}
+                {% for pod in pod_list %}
                     <tr>
 
-                        <td>{{ video.pub_date|date:"M d Y" }}</td>
-                        <td><a href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a>
-                        </td>
-                        {% if video.video_id|video_exists %}
-                            <td><a class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
-                        {% else %}
-                            <td><a class="btn btn-primary" href="{% url 'you2rss:startdownload' video.video_id %}"
-                                   onclick="return true;">Download</a></td>
-                        {% endif %}
+                        <td><a href="{{ pod.http_link }}">{{ pod.pub_date|date:"M d Y" }}</a></td>
+                        <td><a href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
                     </tr>
                 {% endfor %}
             </table>
@@ -59,7 +51,7 @@
         </p>
     </div>
 {% else %}
-    <p>No channels are available.</p>
+    <p>No pods are available.</p>
 {% endif %}
 </body>
 </html>

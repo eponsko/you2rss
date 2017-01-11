@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
 <head>
-    <title>You2RSS channels</title>
+    <title>You2RSS podcasts</title>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
@@ -14,12 +14,11 @@
 <body>
   <ul class="nav nav nav-tabs nav-justified">
     <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-    <li role="presentation" class="active"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-    <li role="presentation"><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
-  </ul>
-
+    <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+    <li role="presentation" class="active" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+</ul>
 <center>
-    <h1>Available channels</h1>
+    <h1>Available podcasts</h1>
     <a href="{% url 'you2rss:opml' %}"> OPML</a>
 </center>
 <div class="container">
@@ -28,20 +27,20 @@
         <table class="table table-striped">
             <tr>
                 <th>Title</th>
-                <th>Videos</th>
+                <th>Podcasts</th>
                 <th>Latest</th>
                 <th>Feed</th>
             </tr>
-            {% for channel in latest_channel_list %}
+            {% for podcast in latest_podcast_list %}
                 <tr>
                     <td>
-                        <a href="{% url 'you2rss:videoperchannel' channel.channel_id %}">{{ channel.title_text }}</a>
+                        <a href="{% url 'you2rss:podperpodcast' podcast.id %}">{{ podcast.title_text }}</a>
                     </td>
-                    <td> {{ channel.video_set.all|length }}</td>
-                    <td> {{ channel.latest_video|timesince }} </td>
+                    <td> {{ podcast.pod_set.all|length }}</td>
+                    <td> {{ podcast.latest_pod|timesince }} </td>
                     <td>
                         <a class="btn btn-primary" target="_blank" type="application/rss+xml"
-                           href="{% url 'you2rss:rssvideoperchannel' channel.channel_id %}">RSS</a>
+                           href="{{ podcast.rss_link }}">RSS</a>
                     </td>
                 </tr>
             {% endfor %}

@@ -1,42 +1,23 @@
 #!/usr/bin/env python
 import os
-# os.environ['DJANGO_SETTINGS_MODULE'] = 'hominem.settings'
-# import django
-# django.setup()
+import requests
+os.environ['DJANGO_SETTINGS_MODULE'] = 'hominem.settings'
+import django
+from django.utils import timezone
+import json
+import datetime
+django.setup()
+from you2rss.models import Channel, Video, Podcast, Pod
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils import timezone
-from django_cron import CronJobBase, Schedule
-from glob import glob
-from models import Channel, Video, Podcast, Pod
-import datetime
-import json
 import logging
-import requests
-
+import feedparser
+from pprint import pprint
 log = logging.getLogger(__name__)
 
 
-class CleanUpFiles(CronJobBase):
-    RUN_EVERY_MINS = 240
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
-    code = 'you2rss.cron.cleanup'
-
-    def do(self):
-        try:
-            log.info('Cleaning up downloaded files')
-            files = glob(settings.STATIC_ROOT + '/files/*_out.*')
-            log.info('Found ' + str(len(files)) + ' files')
-            for file in files:
-                log.info('Deleting ' + file)
-                os.remove(file)
-        except Exception as e:
-            log.info(e)
-
-
-class UpdateChannels(CronJobBase):
+class UpdateChannels():
     RUN_EVERY_MINS = 120
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'you2rss.cron.cleanup'
 
     def do(self):
@@ -223,18 +204,21 @@ class UpdateChannels(CronJobBase):
         for channel in Channel.objects.all():
             self.latest_video(channel)
 
-
-class UpdatePodcasts(CronJobBase):
+class UpdatePodcasts():
     RUN_EVERY_MINS = 120
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = 'you2rss.cron.cleanup'
 
     def do(self):
-        log.info('Updating podcasts')
-        try:
-            self.update_all_podcasts()
+        log.info('Updating videos')
+        try: 
+            self.update_subscriptions()
         except Exception as e:
-            log.error("Caught exception while updating podcasts")
+            log.error("Caught exception while updating subscriptions")
+            log.error(str(e))
+        try:
+            self.update_all_videos()
+        except Exception as e:
+            log.error("Caught exception while updating videos")
             log.error(str(e))
 
             
@@ -244,7 +228,7 @@ class UpdatePodcasts(CronJobBase):
                 self.update_podcast(podcast)
 
         except Exception as e:
-            log.error("Caught exception when updating all podcasts")
+            log.error("Caught exception when updating all videos")
             log.error(e)
         
     def update_podcast(self, podcast):
@@ -369,7 +353,7 @@ class UpdatePodcasts(CronJobBase):
             podcast.latest_pod = list_of_pods[0].pub_date
             podcast.save()
 
-
+                
 if __name__ == '__main__':
 
     import argparse
@@ -458,5 +442,12 @@ if __name__ == '__main__':
         else:
             print("unknown podcast command!")
 
-            
+        #    check_latest_in_channels()
+#    a.update_subscriptions()
+#    a.update_all_videos()
+    # update_videos_for('Veritasium')
+    # delete_videos_for('quite1nteresting')
+    # delete_all_channels()
+    # print_all_channels()
+
 

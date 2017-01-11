@@ -14,7 +14,7 @@ import time
 import mimetypes
 import glob
 import logging
-from .models import Channel, Video
+from .models import Channel, Video, Podcast, Pod
 
 try:
     FileNotFoundError
@@ -79,6 +79,40 @@ def listchannels(request):
 def listvideos(request):
     return HttpResponse('Video list')
 
+def latest(request):
+    from itertools import chain
+    pod_list = Pod.objects.order_by('-pub_date')[:100]
+    vid_list = Video.objects.order_by('-pub_date')[:100]
+#    result_list = list(chain(pod_list, vid_list))
+    result_list = sorted(chain(pod_list, vid_list),reverse=True,  key=lambda instance: instance.pub_date)
+    template = loader.get_template('you2rss/latest.html')
+    context = {
+        'pod_list': result_list,
+    }
+    return HttpResponse(template.render(context, request))
+    
+
+def listpodcasts(request):
+    latest_podcast_list = Podcast.objects.order_by('-latest_pod')
+    template = loader.get_template('you2rss/podcasts.html')
+    context = {
+        'latest_podcast_list': latest_podcast_list,
+    }
+    return HttpResponse(template.render(context, request))
+
+def listpodspodcast(request,podcast_id):
+    podcast  = Podcast.objects.get(id=podcast_id)
+    pod_list = podcast.pod_set.order_by('-pub_date')
+    template = loader.get_template('you2rss/pods.html')
+    context = {
+        'pod_list': pod_list,
+        'podcast_title': podcast.title_text,
+        'podcast_thumb': podcast.thumbnail,
+        'description': podcast.description_text
+    }
+    return HttpResponse(template.render(context, request))
+
+
 def listvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
     video_list = channel.video_set.order_by('-pub_date')
@@ -103,7 +137,7 @@ def test(request, vid):
 def rssvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
     if not channel:
-        return Http404
+       return Http404
 
     videos = channel.video_set.order_by('-pub_date')
     fg = FeedGenerator()
