@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_cron',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -152,3 +153,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 FILE_LOCATION = 'static/files/'
+
+LOGIN_REDIRECT_URL = '/you2rss/latest'      
+
+
+
+
+
+
+

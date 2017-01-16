@@ -1,0 +1,40 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
+  <title>{% block title %}You2rss login{% endblock %}</title>
+</head>
+
+<body>
+  <div id="menu">
+    {% block menu %}
+     <ul class="nav nav nav-tabs nav-justified">
+      <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
+      <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+      <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+      {% if user.is_authenticated %}
+      <li role="presentation" class="active" ><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
+      {% else %}
+      <li role="presentation" class="active" ><a href="{% url 'you2rss:login' %}">Login</a></li>
+      {% endif %}
+    </ul>
+    {% endblock %}
+  </div>
+
+  <main>
+    {% block content %}
+    
+    {% endblock %}
+  </main>
+  
+  <hr>
+</body>
+</html>

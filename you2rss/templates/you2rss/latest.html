@@ -1,73 +1,71 @@
-{% load staticfiles %}
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
-<head>
-    <title>{{ podcast_title }}</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
-<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
- -->
-</head>
-<body>
-  <ul class="nav nav nav-tabs nav-justified">
-    <li role="presentation" class="active"><a href="#">Latest</a></li>
-    <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-    <li role="presentation"><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
-  </ul>
-  
-{% if pod_list %}
-    {% load you2rss_extras %}
-    <div class="container">
-        <center>
-            <h1>Latest</h1>
-        </center>
-    </div>
-    <div class="container">
-<center>        <p><h5>The lastest 200 posted videos and podcasts, order by date</h5></p> </center>
-    </div>
-    <div class="container">
-        <p>
-<!--          <div class="table-responsive">  -->
-            <table class="table table-condensed">
-              <tr>
-                <!-- <th>#</th> -->
-                <th>Title</th>
-                <th>Source</th>
-                <th>Age</th>
-              </tr>
-               {% for pod in pod_list %}
-                 {% if pod.audio_link %}
-              <tr class="active">
-                <!-- <td>{{ forloop.counter }}</td> -->
-                <td><a title="Download podcast audio file" href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
-                <td><a title="Visit podcast page for episode" href="{{ pod.http_link }}">{{ pod.podcast.title_text }}</a> </td>
-                <td><div title="Podcast released {{ pod.pub_date|timesince }} ago"> {{ pod.pub_date|timesince }}</div></td>
-              </tr>
-                {% endif %}
-                {% if pod.video_id %}
-              <tr> 
-                <!-- <td>{{ forloop.counter }}</td> -->
-                <td><a title="Download audio file for YouTube video" href="{% url 'you2rss:rssfile' pod.video_id %}"> {{ pod.title_text }} </a></td>
-                <td><a title="Watch video on YouTube" href="http://www.youtube.com/watch?v={{ pod.video_id }}">{{ pod.channel.title_text }} </a></td>
-                <td><div title="Video published {{ pod.pub_date|timesince }} ago">{{ pod.pub_date|timesince }} </div></td>
-              </tr>                        
-                {% endif %}                        
-              {% endfor %}
-            </table>
-       <!-- </div>   -->
-        </p>
-    </div>
-{% else %}
-    <p>No pods are available.</p>
-{% endif %}
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %} Latest videos and podcasts{% endblock %}
+{% block menu %}
+<ul class="nav nav nav-tabs nav-justified">
+  <li role="presentation" class="active"><a href="{% url 'you2rss:latest' %}">Latest</a></li>
+  <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+  <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+  {% if user.is_authenticated %}
+  <li role="presentation"><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
+  {% else %}
+  <li role="presentation"><a href="{% url 'you2rss:login' %}">Login</a></li>
+  {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+
+  {% if pod_list %}
+   {% load you2rss_extras %}
+<div class="container">
+  <center>
+    <h1>Latest</h1>
+  </center>
+</div>
+<div class="container">
+  <center>        <p><h5>The lastest 200 posted videos and podcasts, order by date</h5></p> </center>
+</div>
+<div class="container">
+  <p>
+    <!--          <div class="table-responsive">  -->
+    <table class="table table-condensed">
+      <tr>
+        <!-- <th>#</th> -->
+        <th>Title</th>
+        <th>Source</th>
+        <th>Age</th>
+      </tr>
+      {% for pod in pod_list %}
+      {% if pod.audio_link %}
+      <tr class="active">
+        <!-- <td>{{ forloop.counter }}</td> -->
+        <td><a title="Download podcast audio file" href="{{ pod.audio_link }}">{{ pod.title_text }}</a> </td>
+        <td><a title="Visit podcast page for episode" href="{{ pod.http_link }}">{{ pod.podcast.title_text }}</a> </td>
+        <td><div title="Podcast released {{ pod.pub_date|timesince }} ago"> {{ pod.pub_date|timesince }}</div></td>
+      </tr>
+      {% endif %}
+      {% if pod.video_id %}
+      <tr> 
+        <!-- <td>{{ forloop.counter }}</td> -->
+        <td><a title="Download audio file for YouTube video" href="{% url 'you2rss:rssfile' pod.video_id %}"> {{ pod.title_text }} </a></td>
+        <td><a title="Watch video on YouTube" href="http://www.youtube.com/watch?v={{ pod.video_id }}">{{ pod.channel.title_text }} </a></td>
+        <td><div title="Video published {{ pod.pub_date|timesince }} ago">{{ pod.pub_date|timesince }} </div></td>
+      </tr>                        
+      {% endif %}                        
+      {% endfor %}
+    </table>
+    <!-- </div>   -->
+  </p>
+</div>
+ {% else %}
+ <p>No pods are available.</p>
+ {% endif %}
+ {% else %}
+  <meta http-equiv="REFRESH" content="0;url={% url 'you2rss:login' %}">
+ {% endif %}
+{% endblock %}
+
 
 
 

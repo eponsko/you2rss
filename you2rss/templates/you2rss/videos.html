@@ -1,25 +1,22 @@
-{% load staticfiles %}
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
-<head>
-    <title>{{ channel_title }}</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
-<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
- -->
-</head>
-<body>
-  <ul class="nav nav nav-tabs nav-justified">
-    <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-    <li role="presentation" class="active"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-    <li role="presentation"><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
-  </ul>
+{% extends "base.html" %}
+{% block title %} {{ channel_title }} {% endblock %}
+{% block menu %}
+<ul class="nav nav nav-tabs nav-justified">
+  <li role="presentation"><a href="{% url 'you2rss:latest' %}">Latest</a></li>
+  <li role="presentation" class="active"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+  <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+  {% if user.is_authenticated %}
+  <li role="presentation"><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
+  {% else %}
+  <li role="presentation"><a href="{% url 'you2rss:login' %}">Login</a></li>
+  {% endif %}
+</ul>
+{% endblock %}
+
+
+{% block content %}
+{% if user.is_authenticated %}
+
   {% if video_list %}
     {% load you2rss_extras %}
     <div class="container">
@@ -61,9 +58,11 @@
 {% else %}
     <p>No channels are available.</p>
 {% endif %}
-</body>
-</html>
 
+ {% else %}
+  <meta http-equiv="REFRESH" content="0;url={% url 'you2rss:login' %}">
+ {% endif %}
+{% endblock %}
 
 
 

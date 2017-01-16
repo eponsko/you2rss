@@ -1,22 +1,21 @@
-{% load staticfiles %}
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://opengraphprotocol.org/schema/" lang="en">
-<head>
-    <title>You2RSS podcasts</title>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="initial-scale=1.0,width=device-width,user-scalable=yes,minimum-scale=1.0,maximum-scale=1.0">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="{% static 'css/you2rss.css' %}">
-</head>
-<body>
-  <ul class="nav nav nav-tabs nav-justified">
-    <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-    <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-    <li role="presentation" class="active" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+{% extends "base.html" %}
+{% block title %} You2RSS podcasts {% endblock %}
+{% block menu %}
+
+<ul class="nav nav nav-tabs nav-justified">
+  <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
+  <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
+  <li role="presentation" class="active" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+  {% if user.is_authenticated %}
+  <li role="presentation"><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
+  {% else %}
+  <li role="presentation"><a href="{% url 'you2rss:login' %}">Login</a></li>
+  {% endif %}
 </ul>
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
 <center>
     <h1>Available podcasts</h1>
     <a href="{% url 'you2rss:opml' %}"> OPML</a>
@@ -24,7 +23,7 @@
 <div class="container">
   <p>
     <div class="table-responsible">
-        <table class="table table-striped">
+        <table class="table table-condensed table-striped">
             <tr>
                 <th>Title</th>
                 <th>Podcasts</th>
@@ -39,17 +38,18 @@
                     <td><div title="{{ podcast.pod_set.all|length }} episodes released"> {{ podcast.pod_set.all|length }}</div></td>
                     <td><div title="Latest episode was released {{ podcast.latest_pod|timesince }} ago"> {{ podcast.latest_pod|timesince }}</div></td>
                     <td>
-                        <a class="btn btn-primary" target="_blank" type="application/rss+xml" title="Download RSS feed for podcast"
+                        <a class="btn btn-primary btn-xs" target="_blank" type="application/rss+xml" title="Download RSS feed for podcast"
                            href="{{ podcast.rss_link }}">RSS</a>
                     </td>
                 </tr>
             {% endfor %}
         </table>
     </div>
-  </p>
 </div>
-</body>
-</html>
+ {% else %}
+  <meta http-equiv="REFRESH" content="0;url={% url 'you2rss:login' %}">
+ {% endif %}
+{% endblock %}
 
 
 

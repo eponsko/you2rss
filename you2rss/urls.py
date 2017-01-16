@@ -1,9 +1,10 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
 app_name = 'you2rss'
 urlpatterns = [
+    url('^', include('django.contrib.auth.urls')),
     url(r'^$', views.latest, name='index'),
     url(r'^channel$', views.listchannels, name='channels'),
     url(r'^channel/(?P<channel_id>[A-Za-z0-9_-]+)/$', views.listvideoschannel, name='videoperchannel'),
