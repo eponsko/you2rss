@@ -14,20 +14,20 @@
 </head>
 
 <body>
-  <div id="menu">
-    {% block menu %}
-     <ul class="nav nav nav-tabs nav-justified">
-      <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-      <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-      <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+  <div class="navbar navbar-fixed-top">
+  <div class="navbar-header pull-right">
+    <ul class="nav navbar-nav">
+      <li class="active"><a title="Latest videos and podcasts" href="{% url 'you2rss:latest' %}"><i class="glyphicon glyphicon-time"></i></a></li>
+      <li><a title="Channels" href="{% url 'you2rss:channels' %}"><i class="glyphicon glyphicon-film"></i></a></li>
+      <li><a title="Podcasts" href="{% url 'you2rss:podcasts' %}"><i class="glyphicon glyphicon-volume-up"></i></a></li>    
       {% if user.is_authenticated %}
-      <li role="presentation" class="active" ><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
+      <li><a title="Logout" href="{% url 'you2rss:logout' %}?next=/you2rss/latest"><i class="glyphicon glyphicon-user"></i></a></li>     
       {% else %}
-      <li role="presentation" class="active" ><a href="{% url 'you2rss:login' %}">Login</a></li>
+      <li><a title="Login" href="{% url 'you2rss:login' %}"><i class="glyphicon glyphicon-user"></i></a></li>     
       {% endif %}
     </ul>
-    {% endblock %}
   </div>
+</div>
 
   <main>
     {% block content %}

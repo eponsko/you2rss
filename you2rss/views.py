@@ -102,7 +102,10 @@ def listpodcasts(request):
 
 def listpodspodcast(request,podcast_id):
     podcast  = Podcast.objects.get(id=podcast_id)
-    pod_list = podcast.pod_set.order_by('-pub_date')
+    if podcast.dynamic:
+        pod_list = podcast.pod_set.order_by('-pub_date')
+    else:
+        pod_list = podcast.pod_set.order_by('-audio_link')
     template = loader.get_template('you2rss/pods.html')
     context = {
         'pod_list': pod_list,
@@ -133,6 +136,55 @@ def test(request, vid):
     data = '''
     '''
     return HttpResponse(data)
+
+def staticrss(request, podcast_id):
+    podcast = Podcast.objects.get(id=podcast_id)
+    if not podcast:
+        return Http404
+
+    pods = podcast.pod_set.order_by('-audio_link')
+    fg = FeedGenerator()
+    fg.load_extension('podcast')
+
+    channelURL = ''.join(['http://', get_current_site(request).domain,
+                          reverse('you2rss:staticrss', args=(podcast_id,))])
+    fg.id(channelURL)
+    fg.title(podcast.title_text)
+    fg.author({'name': 'pon sko', 'email': 'john@example.de'})
+    fg.link(href=channelURL, rel='alternate')
+    description = podcast.description_text
+    if len(description) < 2:
+        description = "no desc"
+    fg.subtitle(description)
+    fg.description(description)
+    fg.language('en')
+    fg.logo(logo=podcast.thumbnail)
+    fg.image(url=podcast.thumbnail, title=podcast.title_text)
+    fg.podcast.itunes_image(podcast.thumbnail)
+    for pod in pods:
+        fe = fg.add_entry()
+        fe.author(name=podcast.title_text)
+        desc = pod.description_text
+        if len(desc) < 2:
+           desc = "no desc"
+        fe.content(desc)
+        fileURL = pod.audio_link
+        #''.join(['http://', get_current_site(request).domain,
+        #                   reverse('you2rss:rssfile', args=(video.video_id,))])
+
+        fe.enclosure(fileURL, pod.audio_size, pod.audio_type)
+        fe.id(fileURL)
+        fe.link(href=fileURL, rel='alternate')
+        fe.podcast.itunes_image(podcast.thumbnail)
+        fe.pubdate(pod.pub_date)
+        fe.published(pod.pub_date)
+        fe.title(pod.title_text)
+
+    rssdata = fg.rss_str(pretty=True)
+    response = HttpResponse(rssdata, content_type='application/rss+xml; charset=UTF-8')
+    response['Content-Length'] = len(rssdata)
+    return response
+
 
 def rssvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)

@@ -43,6 +43,7 @@ class Podcast(models.Model):
     latest_pod = models.DateTimeField('latest pod')
     rss_link = models.CharField(max_length=200)
     http_link = models.CharField(default='',max_length=200)
+    dynamic = models.BooleanField(default=True)
     def __str__(self):
         return self.title_text
 
@@ -55,5 +56,8 @@ class Pod(models.Model):
     description_text = models.CharField(max_length=2000)
     http_link = models.CharField(default='',max_length=500)
     audio_link = models.CharField(default='',max_length=500)
+    audio_size = models.CharField(default='',max_length=20)
+    audio_type = models.CharField(default='',max_length=50)
+
     def __str__(self):
         return self.title_text

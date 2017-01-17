@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %} Latest videos and podcasts{% endblock %}
+{% comment %}
 {% block menu %}
 <ul class="nav nav nav-tabs nav-justified">
   <li role="presentation" ><a href="{% url 'you2rss:latest' %}">Latest</a></li>
@@ -12,7 +13,7 @@
   {% endif %}
 </ul>
 {% endblock %}
-
+{% endcomment %}
 
 {% block content %}
 {% if user.is_authenticated %}

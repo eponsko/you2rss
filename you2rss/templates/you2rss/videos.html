@@ -31,7 +31,7 @@
     <div class="container">
         <p>
         <div class="table-responsible">
-            <table class="table table-striped">
+            <table class="table table-striped table-condensed">
                 <tr>
                     <th>Date</th>
                     <th>Title</th>
@@ -44,9 +44,9 @@
                         <td><a title="Watch video on YouTube" href="http://www.youtube.com/watch?v={{ video.video_id }}">{{ video.title_text }}</a>
                         </td>
                         {% if video.video_id|video_exists %}
-                            <td><a title="Access the audio file" class="btn btn-default" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
+                            <td><a title="Access the audio file" class="btn btn-default btn-xs" href="{% url 'you2rss:file' video.video_id %}">File</a></td>
                         {% else %}
-                            <td><a title="Start download of audio" class="btn btn-primary" href="{% url 'you2rss:startdownload' video.video_id %}"
+                            <td><a title="Start download of audio" class="btn btn-primary btn-xs" href="{% url 'you2rss:startdownload' video.video_id %}"
                                    onclick="return true;">Download</a></td>
                         {% endif %}
                     </tr>

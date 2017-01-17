@@ -1,17 +1,76 @@
 {% extends "base.html" %}
 {% block title %} Latest videos and podcasts{% endblock %}
+
+{% comment %}
 {% block menu %}
-<ul class="nav nav nav-tabs nav-justified">
+<div class="navbar navbar-fixed-top">
+  <div class="navbar-header pull-right">
+    <ul class="nav navbar-nav">
+      <li class="active"><a title="Latest videos and podcasts" href="{% url 'you2rss:latest' %}"><i class="glyphicon glyphicon-time"></i></a></li>
+      <li><a title="Channels" href="{% url 'you2rss:channels' %}"><i class="glyphicon glyphicon-film"></i></a></li>
+      <li><a title="Podcasts" href="{% url 'you2rss:podcasts' %}"><i class="glyphicon glyphicon-volume-up"></i></a></li>    
+      {% if user.is_authenticated %}
+      <li><a title="Logout" href="{% url 'you2rss:logout' %}?next=/you2rss/latest"><i class="glyphicon glyphicon-user"></i></a></li>     
+      {% else %}
+      <li><a title="Login" href="{% url 'you2rss:login' %}"><i class="glyphicon glyphicon-user"></i></a></li>     
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endcomment %}
+    {% comment %}
+<div class="container">
+  <nav class="navbar navbar-default navbar-xs" role="navigation">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a title="Latest videos and podcasts" href="{% url 'you2rss:latest' %}"><i class="glyphicon glyphicon-bell"></i></a></li>
+        <li><a title="Channels" href="{% url 'you2rss:channels' %}"><i class="glyphicon glyphicon-bell"></i></a></li>
+        <li><a title="Podcasts" href="{% url 'you2rss:podcasts' %}"><i class="glyphicon glyphicon-bell"></i></a></li>
+
+        <li><a title="Logout" href="{% url 'you2rss:logout' %}"><i class="glyphicon glyphicon-user"></i></a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </nav>
+</div>
+{% endcomment %}
+{% comment %}
+<nav class="navbar navbar-default navbar-fixed-top">
+ <div class="container">
   <li role="presentation" class="active"><a href="{% url 'you2rss:latest' %}">Latest</a></li>
-  <li role="presentation"><a href="{% url 'you2rss:channels' %}">Channels</a></li>    
-  <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Podcasts</a></li>
+  <li role="presentation"><a href="{% url 'you2rss:channels' %}">YT</a></li>    
+  <li role="presentation" ><a href="{% url 'you2rss:podcasts' %}">Pod</a></li>
   {% if user.is_authenticated %}
   <li role="presentation"><a href="{% url 'you2rss:logout' %}?next=/you2rss/latest">Logout</a></li>
   {% else %}
   <li role="presentation"><a href="{% url 'you2rss:login' %}">Login</a></li>
   {% endif %}
-</ul>
+  </div>
+</nav>
 {% endblock %}
+{% endcomment %}
 
 {% block content %}
 {% if user.is_authenticated %}

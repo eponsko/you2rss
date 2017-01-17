@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^latest$', views.latest, name='latest'),
     url(r'^podcasts$', views.listpodcasts, name='podcasts'),
     url(r'^podcasts/(?P<podcast_id>[A-Za-z0-9_-]+)/$', views.listpodspodcast, name='podperpodcast'),
+    url(r'^staticpod/(?P<podcast_id>[0-9_-]+)/$', views.staticrss, name='staticrss'),
     url(r'^podkicker_backup\.opml$', views.generateopml, name='opml'),
     url(r'^rss$', views.rsschannels, name='rsschannels'),
     url(r'^rss/(?P<channel_id>[A-Za-z0-9_-]+)/$', views.rssvideoschannel, name='rssvideoperchannel'),
