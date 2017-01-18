@@ -8,6 +8,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from feedgen.feed import FeedGenerator
 from django.shortcuts import redirect
 from django.conf import settings
+from django.views.decorators.http import condition
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 import datetime
 import time
@@ -37,8 +38,10 @@ def my_hook(d):
         log.info('Download of "' + downloaded_file + '" complete. Time: ' + d['_elapsed_str'] + ' size: ' + d[
             '_total_bytes_str'] + ' , converting it...')
 
-
-
+def latest_video_channel(request, channel_id):
+    return Channel.objects.filter(channel_id=channel_id).latest("latest_video").latest_video
+def latest_video_channel_etag(request, channel_id):
+    return Channel.objects.filter(channel_id=channel_id).latest("latest_video").video_id
 
 def generateopml(request):
     generated_on = str(datetime.datetime.now())
@@ -81,7 +84,7 @@ def listvideos(request):
 
 def latest(request):
     from itertools import chain
-    pod_list = Pod.objects.order_by('-pub_date')[:100]
+    pod_list = Pod.objects.filter(podcast__dynamic = True).order_by('-pub_date')[:100]
     vid_list = Video.objects.order_by('-pub_date')[:100]
 #    result_list = list(chain(pod_list, vid_list))
     result_list = sorted(chain(pod_list, vid_list),reverse=True,  key=lambda instance: instance.pub_date)
@@ -115,7 +118,7 @@ def listpodspodcast(request,podcast_id):
     }
     return HttpResponse(template.render(context, request))
 
-
+@condition(etag_func=latest_video_channel_etag, last_modified_func=latest_video_channel)
 def listvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
     video_list = channel.video_set.order_by('-pub_date')
@@ -137,6 +140,11 @@ def test(request, vid):
     '''
     return HttpResponse(data)
 
+
+def latest_staticpod(request, podcast_id):
+    return Podcast.objects.filter(id=podcast_id).latest("latest_pod").latest_pod
+
+@condition(last_modified_func=latest_staticpod)
 def staticrss(request, podcast_id):
     podcast = Podcast.objects.get(id=podcast_id)
     if not podcast:
@@ -186,6 +194,9 @@ def staticrss(request, podcast_id):
     return response
 
 
+
+
+@condition(last_modified_func=latest_video_channel)
 def rssvideoschannel(request, channel_id):
     channel = Channel.objects.get(channel_id=channel_id)
     if not channel:

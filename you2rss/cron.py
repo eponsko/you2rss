@@ -7,9 +7,10 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils import timezone
 from django_cron import CronJobBase, Schedule
+import datetime
+
 from glob import glob
 from models import Channel, Video, Podcast, Pod
-import datetime
 import json
 import logging
 import requests
@@ -247,7 +248,7 @@ class UpdatePodcasts(CronJobBase):
     def do(self):
         log.info('Updating podcasts')
         try:
-            #self.update_all_podcasts()
+            self.update_all_podcasts()
             self.update_static_podcasts()
         except Exception as e:
             log.error("Caught exception while updating podcasts")
@@ -425,11 +426,11 @@ class UpdatePodcasts(CronJobBase):
             f = magic.Magic(uncompress=True, mime=True)
             mime = f.from_file(item)
             data = None
-            if mime == 'application/octet-stream':
+            if mime == 'application/octet-stream' or mime == 'audio/mpeg':
                 try:
                     data = self.mp3data(podcast.http_link,item)
                 except Exception as e:
-                    print "Could not find ID3 data in ", e
+                    log.warning("Could not find ID3 data in " +str(e))
 
                 if data:
                     title = data['title']
@@ -539,6 +540,8 @@ if __name__ == '__main__':
     subpodcast_parser.add_parser('updateall')
     subpodcast_parser.add_parser('latest')
     subpodcast_parser.add_parser('deleteall')
+    subpodcast_parser.add_parser('updatestatic')
+
     podcast_opml = subpodcast_parser.add_parser('opml')
     podcast_update = subpodcast_parser.add_parser('update')
     podcast_rss = subpodcast_parser.add_parser('rss')
@@ -594,7 +597,9 @@ if __name__ == '__main__':
             print("Checking latest in podcasts")
            # a.check_latest_in_channels()
         elif args.action == 'deleteall':
-            print("delete all podcasts")            
+            print("delete all podcasts")      
+        elif args.action == 'updatestatic':
+            a.update_static_podcasts()
         elif args.action == 'opml':
             a.read_opml(args.NAME)
         elif args.action == 'update':

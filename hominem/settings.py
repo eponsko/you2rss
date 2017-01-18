@@ -126,8 +126,18 @@ LOGGING = {
             'filename': BASE_DIR + '/django.log',
             'formatter': 'standard',
         },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
     },
-
+    'loggers': {
+        '__main__': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+    },
     'root': {
         'level': 'INFO',
         'handlers': ['logfile']
