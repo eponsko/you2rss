@@ -1,20 +1,16 @@
-import os
 from concurrent.futures import ThreadPoolExecutor
-import youtube_dl
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import Count,F
+from django.forms import ModelForm
 from django.http import HttpResponse, FileResponse, Http404, HttpResponseRedirect
+from django.shortcuts import redirect
 from django.template import loader
 from django.urls import reverse
-from django.contrib.sites.shortcuts import get_current_site
-from feedgen.feed import FeedGenerator
-from django.shortcuts import redirect
-from django.conf import settings
 from django.views.decorators.http import condition
+from feedgen.feed import FeedGenerator
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
-import datetime
-import time
-import mimetypes
-import glob
-import logging
+import datetime, glob, logging, mimetypes, os, time, youtube_dl
 from .models import Channel, Video, Podcast, Pod
 
 try:
@@ -30,6 +26,11 @@ log = logging.getLogger(__name__)
 
 downloaded_file = None
 
+class ChannelForm(ModelForm):
+    class Meta:
+        model = Channel
+        fields = [ 'channel_id' ]
+
 
 def my_hook(d):
     if d['status'] == 'finished':
@@ -38,11 +39,22 @@ def my_hook(d):
         log.info('Download of "' + downloaded_file + '" complete. Time: ' + d['_elapsed_str'] + ' size: ' + d[
             '_total_bytes_str'] + ' , converting it...')
 
-def latest_video_channel(request, channel_id):
-    return Channel.objects.filter(channel_id=channel_id).latest("latest_video").latest_video
+def latest_video_channel(request, channel_id):    
+    channel = Channel.objects.get(channel_id=channel_id)
+    if not channel:
+        return ""
+    return channel.latest_video
+    
 def latest_video_channel_etag(request, channel_id):
-    return Channel.objects.filter(channel_id=channel_id).latest("latest_video").video_id
+    channel = Channel.objects.get(channel_id=channel_id)
+    if not channel:
+       return ""
 
+    video = channel.video_set.order_by('-pub_date')[0]
+    if video:
+        return video.video_id
+    return ""
+    
 def generateopml(request):
     generated_on = str(datetime.datetime.now())
     root = Element('opml')
@@ -71,21 +83,50 @@ def index(request):
     return redirect('you2rss:channels')
 
 def listchannels(request):
-    #    latest_channel_list = Channel.objects.order_by('title_text')
-    latest_channel_list = Channel.objects.order_by('-latest_video')
-    template = loader.get_template('you2rss/index.html')
-    context = {
-        'latest_channel_list': latest_channel_list,
-    }
-    return HttpResponse(template.render(context, request))
+    if request.method == 'POST':
+        form = ChannelForm(request.POST)
+        if form.is_valid():
+            channelid = form.cleaned_data['channel_id']
+            from .cron import UpdateChannels
+            a = UpdateChannels()
+            log.info("Attempting to add channel '" + channelid + "'")
+            a.add_channel(channelid)
+        return HttpResponseRedirect('/you2rss/channel')
+    else:
+        form = ChannelForm()
+        latest_channel_list = Channel.objects.order_by('-latest_video').annotate(num_vids=Count('video'))
+        template = loader.get_template('you2rss/index.html')
+        context = {
+            'latest_channel_list': latest_channel_list,
+            'form' : form,
+        }
+        return HttpResponse(template.render(context, request))
 
 def listvideos(request):
     return HttpResponse('Video list')
 
+
+def latest_entry(request):
+    newest = None
+    podcast = Podcast.objects.filter(dynamic = True).latest('latest_pod').latest_pod
+    channel = Channel.objects.latest('latest_video').latest_video
+    if podcast and channel:
+        if podcast > channel:
+            return podcast
+        else:
+            return channel
+    elif podcast:
+        return podcast
+    elif channel:
+        return channel
+    else:
+        return None
+    
+@condition(last_modified_func=latest_entry)
 def latest(request):
     from itertools import chain
-    pod_list = Pod.objects.filter(podcast__dynamic = True).order_by('-pub_date')[:100]
-    vid_list = Video.objects.order_by('-pub_date')[:100]
+    pod_list = Pod.objects.filter(podcast__dynamic = True).order_by('-pub_date').select_related('podcast')[:100]
+    vid_list = Video.objects.order_by('-pub_date').select_related('channel')[:100]
 #    result_list = list(chain(pod_list, vid_list))
     result_list = sorted(chain(pod_list, vid_list),reverse=True,  key=lambda instance: instance.pub_date)
     template = loader.get_template('you2rss/latest.html')
@@ -93,10 +134,13 @@ def latest(request):
         'pod_list': result_list,
     }
     return HttpResponse(template.render(context, request))
-    
 
+def latest_podcast(request):
+    return Podcast.objects.latest('latest_pod').latest_pod
+
+@condition(last_modified_func=latest_podcast)
 def listpodcasts(request):
-    latest_podcast_list = Podcast.objects.order_by('-latest_pod')
+    latest_podcast_list = Podcast.objects.order_by('-latest_pod').annotate(num_pobs=Count('pod'))
     template = loader.get_template('you2rss/podcasts.html')
     context = {
         'latest_podcast_list': latest_podcast_list,

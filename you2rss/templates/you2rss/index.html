@@ -23,6 +23,10 @@
     <a href="{% url 'you2rss:opml' %}"> OPML</a>
 </center>
 <div class="container">
+  <form action="/you2rss/channel" method="post" id="addform">
+    {% csrf_token %}
+  </form>
+
   <p>
     <div class="table-responsible">
         <table class="table table-striped table-condensed">
@@ -37,7 +41,7 @@
                     <td>
                         <a title="YouTube channel name" href="{% url 'you2rss:videoperchannel' channel.channel_id %}">{{ channel.title_text }}</a>
                     </td>
-                    <td> <div title="{{ channel.video_set.all|length }} videos released">{{ channel.video_set.all|length }} </div></td>
+                    <td> <div title="{{ channel.num_vids }} videos released">{{ channel.num_vids }} </div></td>
                     <td> <div title="Latest video released {{ channel.latest_video|timesince }} ago"> {{ channel.latest_video|timesince }}  </div></td>
                     <td>
                         <a class="btn btn-primary btn-xs" target="_blank" type="application/rss+xml" title="Download RSS feed for channel"
@@ -45,9 +49,22 @@
                     </td>
                 </tr>
             {% endfor %}
+
+                  <tr>
+                    <td>
+
+                      Add channel: <input id="id_channel_id" maxlength="200" name="channel_id" type="text" title="Fill in YouTube channel id" required/>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                      <button class="btn btn-primary btn-xs" form="addform" type="submit">ADD</button>
+                    </td>
+                    </tr>
+
         </table>
     </div>
-  </p>
+
 </div>
  {% else %}
   <meta http-equiv="REFRESH" content="0;url={% url 'you2rss:login' %}">

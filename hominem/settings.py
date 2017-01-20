@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'django_cron',
     'django_extensions',
 ]
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -166,9 +165,18 @@ FILE_LOCATION = 'static/files/'
 
 LOGIN_REDIRECT_URL = '/you2rss/latest'      
 
-
-
-
-
-
-
+# django-debug-toolbar
+#DEBUG = True
+#MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+#INSTALLED_APPS.append('debug_toolbar')
+#INTERNAL_IPS = ( '127.0.0.1', '192.168.0.59', '83.251.85.60', '192.168.0.1', '192.168.0.19',)
+#DEBUG_TOOLBAR_CONFIG = {
+#   'DISABLE_PANELS': [
+#      'debug_toolbar.panels.redirects.RedirectsPanel',
+#    ],
+#    'SHOW_TEMPLATE_CONTEXT': True,
+#}
+#def show_toolbar(request):
+#        return True
+#    SHOW_TOOLBAR_CALLBACK = show_toolbar
+# end django-debug-toolbar

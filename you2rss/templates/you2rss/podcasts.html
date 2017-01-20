@@ -35,7 +35,7 @@
                     <td>
                         <a title="See all released episodes" href="{% url 'you2rss:podperpodcast' podcast.id %}">{{ podcast.title_text }}</a>
                     </td>
-                    <td><div title="{{ podcast.pod_set.all|length }} episodes released"> {{ podcast.pod_set.all|length }}</div></td>
+                    <td><div title="{{ podcast.num_pobs }} episodes released"> {{ podcast.num_pobs }}</div></td>
                     <td><div title="Latest episode was released {{ podcast.latest_pod|timesince }} ago"> {{ podcast.latest_pod|timesince }}</div></td>
                     <td>
                         <a class="btn btn-primary btn-xs" target="_blank" type="application/rss+xml" title="Download RSS feed for podcast"

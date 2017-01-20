@@ -113,6 +113,49 @@ class UpdateChannels(CronJobBase):
                 else:
                     log.info("Channel " + title + "already exists")
 
+    def add_channel(self, channel_id):
+        #GET https://www.googleapis.com/youtube/v3/channels?part=snippet&id=UCskcws9RtJPRM02UVe43BQA&key={YOUR_API_KEY}
+        head = {'referer': 'http://' + 'www.hominem.se'}
+        payload = {'key': settings.APIKEY,
+                   'part': 'snippet',
+                   'id': channel_id}
+        try:
+            log.info("sending request")
+            r = requests.get('https://www.googleapis.com/youtube/v3/channels', headers=head, params=payload)
+            data = json.loads(r.text)
+            log.info("got result " + str(data))
+            if 'items' not in data:
+                log.error("bad channel id?")
+                return
+            for channel in data['items']:
+                log.info("Channel data: " + str(channel))
+                if channel['kind'] != 'youtube#channel':
+                    log.error('kind is not youtube channel')
+                    continue
+                
+                s = channel['snippet']
+                title = s['title']
+                channelId = channel_id
+                publishedAt = timezone.datetime.strptime(s['publishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                pub = timezone.make_aware(publishedAt, timezone=None)
+                description = s['description']
+                thumb = s['thumbnails']['default']['url']
+
+                channels = Channel.objects.filter(title_text=title)
+                if len(channels) == 0:
+                    q = Channel(channel_id=channelId, title_text=title, description_text=description, thumbnail=thumb,
+                            pub_date=pub,latest_video=pub)
+                    q.save()
+                    log.info("Added new channel: " + title)
+                    self.update_videos(q)
+                else:
+                    log.info("Channel " + title + "already exists")
+                
+                
+        except requests.RequestException as e:
+            log.error("Exception in requests.get when searching: " + str(e))
+        return
+    
     def update_all_videos(self):
         try:
             for channel in Channel.objects.all():
@@ -137,7 +180,7 @@ class UpdateChannels(CronJobBase):
         numvideos = 0
         if videos:
             last_pub = videos.last().pub_date
-            latest = last_pub + datetime.timedelta(0, 60)
+            latest = last_pub #+ datetime.timedelta(0, 60)
 
         if latest:
             payload['publishedAfter'] = latest.isoformat()
