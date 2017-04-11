@@ -9,7 +9,7 @@ from django.db import models
 @python_2_unicode_compatible
 # Create your models here.
 class Channel(models.Model):
-    channel_id = models.CharField(max_length=200)
+    channel_id = models.CharField('Youtube channel id',max_length=200)
     title_text = models.CharField(max_length=200)
     description_text = models.CharField(max_length=500)
     pub_date = models.DateTimeField('date published')

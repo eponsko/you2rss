@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import Count,F
-from django.forms import ModelForm
 from django.http import HttpResponse, FileResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
@@ -12,6 +11,7 @@ from feedgen.feed import FeedGenerator
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 import datetime, glob, logging, mimetypes, os, time, youtube_dl
 from .models import Channel, Video, Podcast, Pod
+from .forms import ChannelForm
 
 try:
     FileNotFoundError
@@ -25,11 +25,6 @@ mimetypes.init()
 log = logging.getLogger(__name__)
 
 downloaded_file = None
-
-class ChannelForm(ModelForm):
-    class Meta:
-        model = Channel
-        fields = [ 'channel_id' ]
 
 
 def my_hook(d):
@@ -84,13 +79,17 @@ def index(request):
 
 def listchannels(request):
     if request.method == 'POST':
+        log.info("POST: "+ str(request.POST))
         form = ChannelForm(request.POST)
+        log.info("Got post to /channels, form: " + str(form))
         if form.is_valid():
             channelid = form.cleaned_data['channel_id']
             from .cron import UpdateChannels
             a = UpdateChannels()
             log.info("Attempting to add channel '" + channelid + "'")
             a.add_channel(channelid)
+        else:
+            log.info("Invalid form: "+ str(form.errors))
         return HttpResponseRedirect('/you2rss/channel')
     else:
         form = ChannelForm()
